@@ -31,7 +31,8 @@ func getRoot() string {
     <title>WireframeNinjas</title>
   </head>
   <body>
-  	<div>Wireframe Ninjas...</div>
+  	<h4>Wireframe Ninjas</h4>
+	<div>Coming soon: The return of a website nobody cares about!</div>
   	<canvas id="wfnCanvas" width="640" height="480"></canvas>
   </body>
 </html>`
