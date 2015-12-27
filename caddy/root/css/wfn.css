@@ -1,0 +1,22 @@
+body {
+	max-width: 1000px;
+	margin: 4px auto;
+	background-color: black;
+	color: white;
+	font-family: Consolas, monospace;
+	background-image: url('/img/rez-eden.jpg');
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: right top; 
+}
+
+h1#title {
+	text-align:center;
+}
+
+div#content {
+	border: 4px double orange;
+	border-radius: 10px;
+	padding: 10px;
+	background-color:rgba(0,0,0,0.8);
+}

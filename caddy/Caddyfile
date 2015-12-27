@@ -1,0 +1,26 @@
+ip6-localhost:80, localhost:80 {
+    gzip
+    proxy /time [::1]:8081
+    proxy /slow [::1]:8081
+    tls off
+    log /srv/logs/caddy.localhost.access.log
+}
+
+wireframeninjas.net:80, midori-v2-env.elasticbeanstalk.com:80 {
+    gzip
+    proxy /time [::1]:8081
+    proxy /slow [::1]:8081
+
+    # Needed for automagic TLS:
+    # - Store ../logs and ./.caddy cert/key folder in encrypted EBS
+    # - Remove tls off and caddy with -email and -agree
+    tls off
+
+    log /srv/logs/caddy.wfn.access.log {
+        rotate {
+            size 64 # MB
+            age 1   # daily
+            keep 64 # files
+        }
+    }
+}
