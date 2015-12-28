@@ -1,0 +1,39 @@
+# This is for a minimized docker container (about 20MB) for wireframeninjas.net.
+#
+# Assumptions:
+#   Your build and deploy platforms are linux x64. (I'm using ubuntu and gvm with Go 1.6).
+#   You ran 'go get github.com/julienschmidt/httprouter'
+#   You ran 'go get github.com/mholt/caddy'
+#   You built caddy with alpine-safe options to ./caddy-bin like this:
+#       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o caddy-bin github.com/mholt/caddy
+#   You built wfn.go with alpine-safe options to ./wfn like this:
+#       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o wfn wfn.go
+#   You are running from this folder so ./caddy and ./wfn.sh are where they should be.
+#
+#   You should be able to test with something like this
+#       docker build -f ./Dockerfile.min -t wfn-min . && docker run -it -p 80:80 wfn-min
+#
+# TODO: Drop shell, switch to scratch, need to start caddy in wfn.go.
+
+FROM alpine:latest
+
+# Persistant folders (eventually)
+RUN mkdir -p /srv/logs
+RUN mkdir -p /srv/caddy
+
+# TODO: Chose a better place and refactor/remove wfn.sh
+RUN mkdir -p /go/bin
+COPY ./wfn /go/bin/
+COPY ./caddy-bin /go/bin/caddy
+
+RUN mkdir -p /srv/wfn
+COPY wfn.sh /srv/wfn/
+COPY ./caddy /srv/wfn/caddy
+RUN ln -s /srv/caddy /srv/wfn/caddy/.caddy
+
+# Run container script
+WORKDIR /srv/wfn/caddy
+ENTRYPOINT ["/srv/wfn/wfn.sh"]
+
+EXPOSE 80
+# EXPOSE 443
