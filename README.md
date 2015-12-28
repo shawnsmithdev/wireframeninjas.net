@@ -1,7 +1,7 @@
 wireframeninjas.net
 ===================
 
-Application that runs on [wireframeninjas.net](wireframeninjas.net). Major components are:
+Application that runs on [wireframeninjas.net](http://wireframeninjas.net). Major components are:
 
 * caddy/Caddyfile - Configuration for [Caddy](https://caddyserver.com/), an HTTP/2
   capable frontend for TLS termination and static content.  It proxies dynamic content
