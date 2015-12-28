@@ -6,7 +6,7 @@ ip6-localhost:80, localhost:80 {
     log /srv/logs/caddy.localhost.access.log
 }
 
-wireframeninjas.net:80, midori-v2-env.elasticbeanstalk.com:80 {
+wireframeninjas.net:80, ec2-54-200-182-148.us-west-2.compute.amazonaws.com:80 {
     gzip
     proxy /time [::1]:8081
     proxy /slow [::1]:8081
