@@ -1,4 +1,6 @@
-ip6-localhost:80, localhost:80 {
+ip6-localhost:80,
+localhost:80,
+wireframeninjas.net:80 {
     gzip
     proxy /time [::1]:8081 {
         proxy_header Accept {>Accept}

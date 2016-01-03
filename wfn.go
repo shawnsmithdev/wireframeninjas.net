@@ -9,60 +9,77 @@ import (
 )
 
 const (
+	// Address to serve the backend on
+	serveAddress string = ":8081"
+	// Sleep for just /slow in ms
+	sleepDefaultMillis int = 250
+	// Format for reporting on sleep
 	sleepJsonFmt string = `{"sleep_unit": "Millisecond", "sleep_amount", %d}`
-	maxSleepMs   int    = 5000
+	// If anyone could put 2^31-1 in, someone would, eventually.
+	maxSleepMs int = 5000
 )
 
-func getTime() string {
-	return time.Now().Truncate(time.Millisecond).Format(time.RFC3339Nano)
+// Handle /time for timestamps
+func timeHandler(resp http.ResponseWriter, req *http.Request) {
+	withType("text/plain", handleString(func() string {
+		return time.Now().Truncate(time.Millisecond).Format(time.RFC3339Nano)
+	}))(resp, req)
 }
 
-func getHandler(stringGetter func() string) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("[%v] Got Request from [%v]: [%v] %v%v \n", getTime(), r.RemoteAddr, r.Method, r.Host, r.URL)
-		fmt.Fprintf(w, stringGetter())
-	}
-}
-
-func getTypedHandler(stringGetter func() string, contentType string) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", contentType)
-		getHandler(stringGetter)(w, r)
-	}
-}
-
-func getSlow(ms int) func() string {
+// Builds a handler that sleeps for the given number of ms and returns a json about it.
+func handleSleep(ms int) http.HandlerFunc {
 	sleepTime := time.Duration(ms) * time.Millisecond
-	return func() string {
+	return withType("application/json", handleString(func() string {
 		time.Sleep(sleepTime)
 		return fmt.Sprintf(sleepJsonFmt, ms)
-	}
+	}))
 }
 
+// Handle /slow and /slow/[int], simulate slow rest calls.
 func slowHandler(resp http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	sleepStr := params.ByName("sleep")
+	if sleepStr == "" {
+		handleSleep(sleepDefaultMillis)(resp, req)
+		return
+	}
 	sleep, err := strconv.Atoi(sleepStr)
 	if err != nil {
-		getHandler(err.Error)(resp, req)
-	} else {
-		if sleep > maxSleepMs {
-			sleep = maxSleepMs
-		}
-		getTypedHandler(getSlow(sleep), "application/json")(resp, req)
+		handleString(err.Error)(resp, req)
+		return
+	}
+	if sleep > maxSleepMs {
+		sleep = maxSleepMs
+	}
+	handleSleep(sleep)(resp, req)
+}
+
+// Build simple string handlers
+func handleString(stringSource func() string) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(resp, stringSource())
 	}
 }
 
-func noParams(wrapped func(w http.ResponseWriter, r *http.Request)) func(http.ResponseWriter, *http.Request, httprouter.Params) {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		wrapped(w, r)
+// Inject content type headers
+func withType(contentType string, wrapped http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		resp.Header().Set("Content-Type", contentType)
+		wrapped(resp, req)
+	}
+}
+
+// Adaptor to ignore parameters
+func noParams(wrapped http.HandlerFunc) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+		wrapped(resp, req)
 	}
 }
 
 func main() {
 	router := httprouter.New()
-	router.GET("/time", noParams(getHandler(getTime)))
-	router.GET("/slow", noParams(getTypedHandler(getSlow(250), "application/json")))
+	router.GET("/time", noParams(timeHandler))
+	router.GET("/slow", slowHandler)
 	router.GET("/slow/:sleep", slowHandler)
 
-	fmt.Println(http.ListenAndServe(":8081", router))
+	fmt.Println(http.ListenAndServe(serveAddress, router))
 }

@@ -1,5 +1,9 @@
 #!/bin/sh
+
 echo "Starting wfn backend..."
-/go/bin/wfn &
+wfn &
+
 echo "Starting caddy frontend..."
-/go/bin/caddy -root ./root
+caddy -conf /caddy/Caddyfile -root /caddy/public -quiet
+
+echo "Caddy frontend exited..."

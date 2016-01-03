@@ -1,0 +1,37 @@
+# This is for a minimized docker container for wireframeninjas.net.
+#
+# Assumptions:
+#   Your build and deploy platforms are linux x64. (I'm using ubuntu and gvm with Go 1.6).
+#   You ran 'go get github.com/julienschmidt/httprouter'
+#   You ran 'go get github.com/mholt/caddy'
+#   You built wfn.go with alpine-safe options to ./wfn like this:
+#       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o wfn wfn.go
+#   You built caddy with alpine-safe options to ./caddy-bin like this:
+#       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o caddy-bin github.com/mholt/caddy
+#
+#   You should be able to test with something like this
+#       docker build -f ./Dockerfile.prod -t wfn-test . && docker run -it -p 80:80 wfn-test
+#
+#   TODO: FROM caddy image (when intercontainer networking in ECS is figured out)
+
+FROM alpine:latest
+
+COPY ./caddy-bin /bin/caddy
+COPY ./wfn /bin/wfn
+COPY ./caddy /caddy
+
+# Use LE Cert enabled Caddyfile.
+RUN rm /caddy/Caddyfile
+COPY ./caddy/Caddyfile.prod /caddy/Caddyfile
+
+RUN mkdir -p /home/caddy/logs
+RUN mkdir -p /home/caddy/.caddy
+
+ENV HOME /home/caddy
+WORKDIR /home/caddy
+
+COPY ./wfn.sh /home/caddy/wfn.sh
+ENTRYPOINT ["/home/caddy/wfn.sh"]
+
+EXPOSE 80
+EXPOSE 443

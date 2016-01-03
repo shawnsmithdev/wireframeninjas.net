@@ -1,0 +1,10 @@
+FROM golang:1.6
+
+RUN go get github.com/julienschmidt/httprouter
+
+COPY wfn.go /wfn.go
+
+RUN go build -o /bin/wfn /wfn.go
+
+EXPOSE 8081
+ENTRYPOINT ["/bin/wfn"]
