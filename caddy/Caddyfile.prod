@@ -1,6 +1,5 @@
 ip6-localhost:80,
-localhost:80,
-wireframeninjas.net:80 {
+localhost:80 {
     gzip
     proxy /time [::1]:8081 {
         proxy_header Accept {>Accept}
@@ -11,7 +10,18 @@ wireframeninjas.net:80 {
         proxy_header X-Caddy-Remote {remote}
     }
     tls off
+}
 
+wireframeninjas.net {
+    gzip
+    proxy /time [::1]:8081 {
+        proxy_header Accept {>Accept}
+        proxy_header X-Caddy-Remote {remote}
+    }
+    proxy /slow [::1]:8081 {
+        proxy_header Accept {>Accept}
+        proxy_header X-Caddy-Remote {remote}
+    }
     log /home/caddy/logs/access.log {
         rotate {
             size 64 # MB

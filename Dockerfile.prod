@@ -15,6 +15,8 @@
 #   TODO: FROM caddy image (when intercontainer networking in ECS is figured out)
 
 FROM alpine:latest
+# Needed to trust let's encrypt
+RUN apk add --update ca-certificates && rm -rf /var/cache/apk/*
 
 COPY ./caddy-bin /bin/caddy
 COPY ./wfn /bin/wfn
@@ -24,13 +26,13 @@ COPY ./caddy /caddy
 RUN rm /caddy/Caddyfile
 COPY ./caddy/Caddyfile.prod /caddy/Caddyfile
 
-RUN mkdir -p /home/caddy/logs
-RUN mkdir -p /home/caddy/.caddy
+VOLUME ["/home/caddy/logs"]
+VOLUME ["/home/caddy/.caddy"]
 
 ENV HOME /home/caddy
 WORKDIR /home/caddy
 
-COPY ./wfn.sh /home/caddy/wfn.sh
+COPY ./wfn.prod.sh /home/caddy/wfn.sh
 ENTRYPOINT ["/home/caddy/wfn.sh"]
 
 EXPOSE 80
