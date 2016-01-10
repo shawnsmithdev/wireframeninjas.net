@@ -8,13 +8,9 @@ ip6-localhost:80, localhost:80 {
         proxy_header Accept {>Accept}
         proxy_header X-Caddy-Remote {remote}
     }
-    tls off
-
-    log /home/caddy/logs/access.log {
-        rotate {
-            size 64 # MB
-            age 120 # daily
-            keep 64 # files
-        }
+    proxy /choose [::1]:8081 {
+        proxy_header Accept {>Accept}
+        proxy_header X-Caddy-Remote {remote}
     }
+    tls off
 }

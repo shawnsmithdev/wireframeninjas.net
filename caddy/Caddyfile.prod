@@ -9,6 +9,10 @@ localhost:80 {
         proxy_header Accept {>Accept}
         proxy_header X-Caddy-Remote {remote}
     }
+    proxy /choose [::1]:8081 {
+        proxy_header Accept {>Accept}
+        proxy_header X-Caddy-Remote {remote}
+    }
     tls off
 }
 
@@ -19,6 +23,10 @@ wireframeninjas.net {
         proxy_header X-Caddy-Remote {remote}
     }
     proxy /slow [::1]:8081 {
+        proxy_header Accept {>Accept}
+        proxy_header X-Caddy-Remote {remote}
+    }
+    proxy /choose [::1]:8081 {
         proxy_header Accept {>Accept}
         proxy_header X-Caddy-Remote {remote}
     }

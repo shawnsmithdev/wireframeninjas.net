@@ -8,6 +8,8 @@
 #       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o wfn wfn.go
 #   You built caddy with alpine-safe options to ./caddy-bin like this:
 #       CGO_ENABLED=0 GOOS=linux go build -ldflags "-s" -a -installsuffix cgo -o caddy-bin github.com/mholt/caddy
+#           Note: Caddy Auto-TLS may not work when built with go1.6beta1 yet due to
+#           https://github.com/letsencrypt/boulder/issues/1279 (Akamai screwed up on HTTP/2)
 #
 #   You should be able to test with something like this
 #       docker build -f ./Dockerfile.prod -t wfn-test . && docker run -it -p 80:80 wfn-test
